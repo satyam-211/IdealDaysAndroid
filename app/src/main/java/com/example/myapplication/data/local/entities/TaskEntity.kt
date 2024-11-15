@@ -20,13 +20,14 @@ class TaskEntity(
     val taskType: Int,
     val completionHistoryJson: String? = null,
     val isCompleted: Boolean? = null,
+    // Alarm-related fields
 ){
     fun toTask() : Task {
        return when(taskType){
             0 -> Task.BinaryTask(
-                binaryTaskId = id,
-                binaryTaskDesc = description,
-                binaryTaskCreatedDate = createdDate,
+                id = id,
+                description = description,
+                createdDate = createdDate,
                 scheduledDate = scheduledDate,
                 isThisCompleted = isCompleted ?: false,
             )
@@ -36,9 +37,9 @@ class TaskEntity(
                } ?: emptyList()
 
               return Task.PartialTask(
-                  partialTaskId = id,
-                  partialTaskDesc = description,
-                  partialTaskCreatedDate = createdDate,
+                  id = id,
+                  description = description,
+                  createdDate = createdDate,
                   scheduledDate = scheduledDate,
                   completionHistory = completionHistory.toMutableList(),
               )

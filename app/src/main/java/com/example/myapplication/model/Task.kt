@@ -18,7 +18,9 @@ import java.util.UUID
 sealed class Task(
     open val id: UUID,
     open val description: String,
-    open val createdDate: LocalDate = LocalDate.now()
+    open val createdDate: LocalDate = LocalDate.now(),
+    // Alarm-related fields
+    open var alarmTimeInMillis: Long? = null,
 ) {
     abstract fun toEntity(): TaskEntity
 
@@ -27,20 +29,21 @@ sealed class Task(
     abstract var scheduledDate: LocalDate
 
     data class BinaryTask(
-        val binaryTaskId: UUID = UUID.randomUUID(),
-        val binaryTaskCreatedDate: LocalDate = LocalDate.now(),
-        val binaryTaskDesc: String,
+        override val id: UUID = UUID.randomUUID(),
+        override val createdDate: LocalDate = LocalDate.now(),
+        override val description : String,
         var isThisCompleted: Boolean = false,
-        override var scheduledDate: LocalDate  = binaryTaskCreatedDate,
-    ) : Task(id = binaryTaskId, description = binaryTaskDesc, createdDate = binaryTaskCreatedDate) {
+        override var alarmTimeInMillis: Long? = null,
+        override var scheduledDate: LocalDate  = createdDate,
+    ) : Task(id = id, description = description, createdDate = createdDate, alarmTimeInMillis = alarmTimeInMillis) {
         override fun toEntity(): TaskEntity {
             return TaskEntity(
                 id = id,
                 description = description,
                 createdDate = createdDate,
                 scheduledDate = scheduledDate,
-                isCompleted = isThisCompleted,
                 taskType = 0,
+                isCompleted = isThisCompleted,
             )
         }
 
@@ -50,12 +53,13 @@ sealed class Task(
     }
 
     data class PartialTask(
-        val partialTaskId: UUID = UUID.randomUUID(),
-        val partialTaskCreatedDate: LocalDate = LocalDate.now(),
-        val partialTaskDesc: String,
+        override val id: UUID = UUID.randomUUID(),
+        override val createdDate: LocalDate = LocalDate.now(),
+        override val description : String,
+        override var alarmTimeInMillis: Long? = null,
         var completionHistory: MutableList<CompletionEntry> = mutableListOf(),
-        override var scheduledDate: LocalDate = partialTaskCreatedDate,
-    ) : Task(id = partialTaskId, description = partialTaskDesc, createdDate = partialTaskCreatedDate) {
+        override var scheduledDate: LocalDate = createdDate,
+    ) : Task(id = id, description = description, createdDate = createdDate) {
        override fun toEntity() : TaskEntity {
            val completionHistoryJson = convertToJson(completionHistory)
 
@@ -64,8 +68,8 @@ sealed class Task(
                description = description,
                createdDate = createdDate,
                scheduledDate = scheduledDate,
-               completionHistoryJson = completionHistoryJson,
                taskType = 1,
+               completionHistoryJson = completionHistoryJson,
            )
        }
         private fun convertToJson(completionHistory: List<CompletionEntry>): String {
@@ -100,12 +104,6 @@ data class CompletionEntry(
 fun LocalDate.Companion.now(): LocalDate {
     val currentInstant = Clock.System.now()
     return currentInstant.toLocalDateTime(TimeZone.currentSystemDefault()).date
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun LocalDate.format(pattern: String): String {
-    val formatter = DateTimeFormatter.ofPattern(pattern)
-    return this.toJavaLocalDate().format(formatter)
 }
 
 /**

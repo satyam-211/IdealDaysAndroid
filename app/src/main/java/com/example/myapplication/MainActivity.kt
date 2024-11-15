@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.navigation.NavGraph
+import com.example.myapplication.utils.NotificationUtils
 import com.example.myapplication.view.theme.MyApplicationTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,6 +19,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        NotificationUtils.createNotificationChannel(this)
         setContent {
             MyApplicationTheme {
                 IdealDaysApp()

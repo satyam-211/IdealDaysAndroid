@@ -1,7 +1,10 @@
 package com.example.myapplication.view.presentation.addTask
 
 
+import PermissionHandler
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -23,12 +27,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.view.presentation.components.TimePicker
 import com.example.myapplication.viewmodel.AddTaskViewModel
+import java.util.Calendar
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,8 +46,12 @@ fun AddTaskScreen(
     viewModel: AddTaskViewModel = hiltViewModel(),
     navController: NavController,
 ) {
+    val context = LocalContext.current
     val selectedTaskType by viewModel.selectedTaskType.collectAsState()
     val description by viewModel.description.collectAsState()
+    val alarmTime by viewModel.currentTimeinMillis.collectAsState()
+    var showAlarmPermissionDialog by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     val isFormValid by remember {
         derivedStateOf { description.trim().isNotEmpty() }
     }
@@ -76,6 +89,82 @@ fun AddTaskScreen(
                 description = description,
                 onDescriptionChange = { viewModel.description.value = it },
             )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Handle Notification Permission
+            val notificationPermissionLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = { granted ->
+                    if (granted) {
+                        showTimePicker = true
+                    } else {
+                        // Handle permission denial, e.g., show a message
+                    }
+                }
+            )
+
+            AlarmButton(
+                onClick = {
+                    if (PermissionHandler.hasExactAlarmPermission(context) && PermissionHandler.hasNotificationPermission(
+                            context
+                        )
+                    ) {
+                        showTimePicker = true
+                    } else if (!PermissionHandler.hasExactAlarmPermission(context)) {
+                        showAlarmPermissionDialog = true
+                    } else if (!PermissionHandler.hasNotificationPermission(context)) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+                },
+                label = alarmTime,
+            )
+
+            // Alarm Permission Dialog
+            if (showAlarmPermissionDialog) {
+                AlertDialog(
+                    onDismissRequest = { /* Optional: Handle dismiss */ },
+                    title = { Text("Permission Required") },
+                    text = { Text("This app needs permission to schedule exact alarms. Please grant it in settings.") },
+                    confirmButton = {
+                        Button(onClick = {
+                            PermissionHandler.requestExactAlarmPermission(context)
+                            showAlarmPermissionDialog = false
+                        }) {
+                            Text("Open Settings")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showAlarmPermissionDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            if (showTimePicker) {
+                TimePicker { hour, minute ->
+                    showTimePicker = false
+
+                    // Calculate the time in milliseconds for the selected time today
+                    viewModel.currentTimeinMillis.value = Calendar.getInstance().let {
+                        it.set(Calendar.HOUR_OF_DAY, hour)
+                        it.set(Calendar.MINUTE, minute)
+                        it.set(Calendar.SECOND, 0)
+                        it.set(Calendar.MILLISECOND, 0)
+
+                        // If the selected time is before the current time, set it for the next day
+                        if (it.before(Calendar.getInstance())) {
+                            it.add(Calendar.DAY_OF_YEAR, 1)
+                        }
+                        it.timeInMillis
+                    }
+
+                }
+            }
+
+
 
             Spacer(modifier = Modifier.weight(1f))
             Button(

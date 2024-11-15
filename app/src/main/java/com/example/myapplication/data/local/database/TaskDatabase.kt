@@ -10,8 +10,7 @@ import com.example.myapplication.data.local.type_converters.Converters
 
 @Database(
     entities = [TaskEntity::class],
-    version = 2,
-    exportSchema = true
+    version = 3,
 )
 @TypeConverters(Converters::class,CompletionHistoryConverter::class)
 abstract class TaskDatabase : RoomDatabase() {

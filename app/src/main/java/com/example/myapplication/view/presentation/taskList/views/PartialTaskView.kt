@@ -36,7 +36,6 @@ import com.example.myapplication.model.CompletionEntry
 import com.example.myapplication.model.Task
 import com.example.myapplication.viewmodel.TaskListViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PartialTaskView(task: Task.PartialTask) {
     val viewModel: TaskListViewModel = hiltViewModel()
