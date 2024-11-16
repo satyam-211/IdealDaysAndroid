@@ -44,6 +44,7 @@ sealed class Task(
                 scheduledDate = scheduledDate,
                 taskType = 0,
                 isCompleted = isThisCompleted,
+                alarmTimeInMillis = alarmTimeInMillis,
             )
         }
 
@@ -70,6 +71,7 @@ sealed class Task(
                scheduledDate = scheduledDate,
                taskType = 1,
                completionHistoryJson = completionHistoryJson,
+               alarmTimeInMillis = alarmTimeInMillis,
            )
        }
         private fun convertToJson(completionHistory: List<CompletionEntry>): String {

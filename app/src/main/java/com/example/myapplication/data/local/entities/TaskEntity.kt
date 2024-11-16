@@ -21,6 +21,7 @@ class TaskEntity(
     val completionHistoryJson: String? = null,
     val isCompleted: Boolean? = null,
     // Alarm-related fields
+    val alarmTimeInMillis: Long? = null,
 ){
     fun toTask() : Task {
        return when(taskType){
@@ -30,6 +31,7 @@ class TaskEntity(
                 createdDate = createdDate,
                 scheduledDate = scheduledDate,
                 isThisCompleted = isCompleted ?: false,
+                alarmTimeInMillis = alarmTimeInMillis,
             )
            1 -> {
                val completionHistory = completionHistoryJson?.let {
@@ -42,6 +44,7 @@ class TaskEntity(
                   createdDate = createdDate,
                   scheduledDate = scheduledDate,
                   completionHistory = completionHistory.toMutableList(),
+                  alarmTimeInMillis = alarmTimeInMillis,
               )
            }
 
