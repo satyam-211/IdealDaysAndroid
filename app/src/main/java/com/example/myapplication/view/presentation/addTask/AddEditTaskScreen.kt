@@ -2,11 +2,14 @@ package com.example.myapplication.view.presentation.addTask
 
 
 import PermissionHandler
+import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,14 +39,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.view.presentation.components.TimePicker
-import com.example.myapplication.viewmodel.AddTaskViewModel
+import com.example.myapplication.viewmodel.AddEditTaskViewModel
 import java.util.Calendar
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTaskScreen(
-    viewModel: AddTaskViewModel = hiltViewModel(),
+fun AddEditTaskScreen(
+    viewModel: AddEditTaskViewModel = hiltViewModel(),
     navController: NavController,
 ) {
     val context = LocalContext.current
@@ -55,11 +58,15 @@ fun AddTaskScreen(
     val isFormValid by remember {
         derivedStateOf { description.trim().isNotEmpty() }
     }
+    val isEditMode by remember {
+        derivedStateOf { viewModel.taskToBeEdited != null }
+    }
+    val attachments by viewModel.attachments.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add New Task") },
+                title = { Text(if (isEditMode) "Edit Task" else "Add New Task") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -74,16 +81,19 @@ fun AddTaskScreen(
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            Text(text = "Select Task Type", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(8.dp))
+            if (!isEditMode)
+                Text(text = "Select Task Type", style = MaterialTheme.typography.headlineMedium)
+            if (!isEditMode)
+                Spacer(modifier = Modifier.height(8.dp))
 
+            if (!isEditMode)
             // Radio Buttons for Task Type Selection
-            TaskTypeSelector(
-                selectedTaskType = selectedTaskType,
-                onTaskTypeSelected = viewModel::onTaskTypeSelected
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+                TaskTypeSelector(
+                    selectedTaskType = selectedTaskType,
+                    onTaskTypeSelected = viewModel::onTaskTypeSelected
+                )
+            if (!isEditMode)
+                Spacer(modifier = Modifier.height(16.dp))
 
             TaskForm(
                 description = description,
@@ -103,23 +113,33 @@ fun AddTaskScreen(
                 }
             )
 
-            AlarmButton(
-                onClick = {
-                    if (PermissionHandler.hasExactAlarmPermission(context) && PermissionHandler.hasNotificationPermission(
-                            context
-                        )
-                    ) {
-                        showTimePicker = true
-                    } else if (!PermissionHandler.hasExactAlarmPermission(context)) {
-                        showAlarmPermissionDialog = true
-                    } else if (!PermissionHandler.hasNotificationPermission(context)) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                AlarmButton(
+                    onClick = {
+                        if (PermissionHandler.hasExactAlarmPermission(context) && PermissionHandler.hasNotificationPermission(
+                                context
+                            )
+                        ) {
+                            showTimePicker = true
+                        } else if (!PermissionHandler.hasExactAlarmPermission(context)) {
+                            showAlarmPermissionDialog = true
+                        } else if (!PermissionHandler.hasNotificationPermission(context)) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
                         }
-                    }
-                },
-                label = alarmTime,
-            )
+                    },
+                    label = alarmTime,
+                )
+                AddAttachmentButton(
+                    onAttachmentsSelected = { attachments ->
+                        viewModel.addAttachments(attachments = attachments)
+                    },
+                )
+            }
 
             // Alarm Permission Dialog
             if (showAlarmPermissionDialog) {
@@ -164,7 +184,17 @@ fun AddTaskScreen(
                 }
             }
 
-
+            attachments.forEach { attachment ->
+                AttachmentItem(
+                    attachment = attachment,
+                    onDelete = { viewModel.removeAttachment(attachment) },
+                    onUpdate = { updatedAttachment ->
+                        viewModel.removeAttachment(attachment)
+                        viewModel.addAttachment(updatedAttachment)
+                        viewModel.updateAttachments(attachments)
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
             Button(
@@ -176,7 +206,7 @@ fun AddTaskScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = isFormValid
             ) {
-                Text(text = "Add Task")
+                Text(text = if (isEditMode) "Update Task" else "Add Task")
             }
         }
     }

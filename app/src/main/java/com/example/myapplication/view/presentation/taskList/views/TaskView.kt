@@ -1,13 +1,19 @@
 package com.example.myapplication.view.presentation.taskList.views
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,7 +26,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.myapplication.constants.RouteConstants
 import com.example.myapplication.model.Task
+import com.example.myapplication.model.toJson
+import com.example.myapplication.navigation.LocalAppNavController
 import com.example.myapplication.viewmodel.TaskListViewModel
 
 @Composable
@@ -33,6 +42,7 @@ fun TaskView(task: Task) {
             scheduleTasks.contains(task)
         }
     }
+    val navController = LocalAppNavController.current
     Row(verticalAlignment = Alignment.CenterVertically) {
         Card(
             modifier = Modifier
@@ -51,12 +61,20 @@ fun TaskView(task: Task) {
                 is Task.PartialTask -> PartialTaskView(task)
             }
         }
-        if(angerMode)
+        Spacer(modifier = Modifier.width(4.dp))
+        IconButton(
+            onClick = {
+                navController.navigate("${RouteConstants.ADDEDITTASKROUTE}?task=${task.toJson()}")
+            },
+        ) {
+            Icon(Icons.Default.Build, contentDescription = "Edit")
+        }
+        if (angerMode)
             Checkbox(
                 modifier = Modifier.padding(start = 10.dp),
                 checked = isChecked,
                 onCheckedChange = { checked ->
-                       viewModel.toggleSchedule(task, checked)
+                    viewModel.toggleSchedule(task, checked)
                 }
             )
     }
@@ -65,7 +83,7 @@ fun TaskView(task: Task) {
 
 @Composable
 @Preview(showBackground = true)
-fun TaskViewPreview(){
+fun TaskViewPreview() {
     Button(
         modifier = Modifier.padding(start = 4.dp),
         onClick = { },

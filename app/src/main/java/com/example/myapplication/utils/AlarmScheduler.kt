@@ -36,7 +36,7 @@ class AlarmScheduler @Inject constructor(
         )
     }
 
-    fun cancelTaskAlarm(context: Context, task: Task) {
+    fun cancelTaskAlarm(task: Task) {
         val intent = Intent(context, AlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,

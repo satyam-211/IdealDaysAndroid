@@ -9,6 +9,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.utils.Utils
@@ -19,7 +20,7 @@ fun AlarmButton(
     label: Long?
 ) {
     Button(onClick = onClick) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(label?.let { Utils.formatTime(it) } ?: "Set Alarm")
             Spacer(modifier = Modifier.width(8.dp))
             Icon(Icons.Filled.Notifications, contentDescription = "Set Alarm")

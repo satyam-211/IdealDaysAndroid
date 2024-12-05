@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.constants.PaddingConstants
 import com.example.myapplication.model.DayTasks
-import com.example.myapplication.model.formatWithOrdinal
+import com.example.myapplication.utils.formatWithOrdinal
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable

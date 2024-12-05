@@ -3,6 +3,7 @@ package com.example.myapplication.data.local.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import com.example.myapplication.data.AttachmentInfo
 import com.example.myapplication.data.local.type_converters.Converters
 import com.example.myapplication.model.CompletionEntry
 import com.example.myapplication.model.Task
@@ -12,7 +13,7 @@ import java.util.UUID
 
 @Entity(tableName = "tasks")
 @TypeConverters(Converters::class)
-class TaskEntity(
+data class TaskEntity(
     @PrimaryKey val id: UUID,
     val description: String,
     val createdDate: LocalDate,
@@ -22,16 +23,19 @@ class TaskEntity(
     val isCompleted: Boolean? = null,
     // Alarm-related fields
     val alarmTimeInMillis: Long? = null,
+    // Attachments
+    val attachments: List<AttachmentInfo> = emptyList()
 ){
     fun toTask() : Task {
        return when(taskType){
             0 -> Task.BinaryTask(
-                id = id,
+                binaryTaskId = id,
                 description = description,
-                createdDate = createdDate,
-                scheduledDate = scheduledDate,
+                binaryTaskCreatedDate = createdDate,
+                binaryTaskScheduledDate = scheduledDate,
                 isThisCompleted = isCompleted ?: false,
                 alarmTimeInMillis = alarmTimeInMillis,
+                attachments = attachments,
             )
            1 -> {
                val completionHistory = completionHistoryJson?.let {
@@ -39,12 +43,13 @@ class TaskEntity(
                } ?: emptyList()
 
               return Task.PartialTask(
-                  id = id,
+                  partialTaskId = id,
                   description = description,
-                  createdDate = createdDate,
-                  scheduledDate = scheduledDate,
+                  partialTaskCreatedDate = createdDate,
+                  partialTaskScheduledDate = scheduledDate,
                   completionHistory = completionHistory.toMutableList(),
                   alarmTimeInMillis = alarmTimeInMillis,
+                  attachments = attachments,
               )
            }
 

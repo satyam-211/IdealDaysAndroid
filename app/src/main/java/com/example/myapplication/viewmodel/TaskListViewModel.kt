@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.repo.TaskRepository
 import com.example.myapplication.model.DayTasks
 import com.example.myapplication.model.Task
-import com.example.myapplication.model.now
+import com.example.myapplication.utils.now
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

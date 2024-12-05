@@ -23,7 +23,6 @@ object AppModule {
         return LocalTaskRepository(taskDao)
     }
 
-
     @Provides
     @Singleton
     fun provideAlarmManager(

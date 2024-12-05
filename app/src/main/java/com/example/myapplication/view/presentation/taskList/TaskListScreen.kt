@@ -94,7 +94,7 @@ fun TaskListScreen(
                 Text(text = StringConstants.TASKS_TITLE)
             },
                 actions = {
-                    IconButton(onClick = { navController.navigate(RouteConstants.ADDTASKROUTE) }) {
+                    IconButton(onClick = { navController.navigate(RouteConstants.ADDEDITTASKROUTE) }) {
                         Icon(Icons.Default.Add, contentDescription = "Add Tasks")
                     }
                 }

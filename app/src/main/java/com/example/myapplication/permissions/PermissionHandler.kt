@@ -41,4 +41,10 @@ object PermissionHandler {
             true
         }
     }
+
+    fun hasAllAttachmentPermissions(context: Context, permissions: Array<String>): Boolean {
+        return permissions.all { permission ->
+            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+        }
+    }
 }

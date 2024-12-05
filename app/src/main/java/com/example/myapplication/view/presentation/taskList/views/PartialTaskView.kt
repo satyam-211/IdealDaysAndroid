@@ -79,7 +79,7 @@ fun PartialTaskView(task: Task.PartialTask) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(onClick = { showEditSheet = true }) {
-                    Text("Edit")
+                    Text("Set Completion")
                 }
                 Text(text = "Completed ${task.getLatestCompletionPercentage()}%")
             }
@@ -94,7 +94,7 @@ fun PartialTaskView(task: Task.PartialTask) {
     }
 
     if (showEditSheet)
-        PartialTaskEditView(
+        PartialTaskCompletionView(
             task = task,
             onDismiss = { showEditSheet = false },
             onSave = { sliderValue, reason ->
@@ -128,7 +128,7 @@ fun HistorySheet(completionHistory: MutableList<CompletionEntry>, onDismiss: () 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PartialTaskEditView(
+fun PartialTaskCompletionView(
     task: Task.PartialTask,
     onDismiss: () -> Unit,
     onSave: (Int, String?) -> Unit

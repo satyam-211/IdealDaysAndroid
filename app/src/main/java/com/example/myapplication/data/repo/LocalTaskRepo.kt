@@ -5,7 +5,7 @@ import com.example.myapplication.data.local.entities.TaskEntity
 import com.example.myapplication.model.CompletionEntry
 import com.example.myapplication.model.DayTasks
 import com.example.myapplication.model.Task
-import com.example.myapplication.model.now
+import com.example.myapplication.utils.now
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.datetime.LocalDate
@@ -21,37 +21,11 @@ class LocalTaskRepository @Inject constructor(private val taskDao: TaskDao) : Ta
         taskDao.deleteTaskById(taskId = task.id)
     }
 
-
-    override suspend fun getTasksForDay(date: LocalDate): List<Task> {
-        return taskDao.getTasksForDay(date).map { taskEntity -> taskEntity.toTask() }
-
-    }
-
-    override suspend fun getTasksAndAverageCompletionForDay(date: LocalDate): Pair<List<Task>, Double> {
-        val tasks = taskDao.getTasksForDay(date)
-
-        val totalPercentage = tasks.sumOf { task ->
-            when (task.taskType) {
-                0 -> if (task.isCompleted == true) 100 else 0
-                1 -> calculatePartialTaskCompletionPercentage(task, date)
-                else -> 0
-            }
-        }
-
-        val averagePercentage = if (tasks.isNotEmpty()) {
-            totalPercentage.toDouble() / tasks.size
-        } else {
-            0.0
-        }
-
-        return Pair(tasks.map { taskEntity -> taskEntity.toTask() }, averagePercentage)
-    }
-
     override suspend fun getTasksForDateRange(
         startDate: LocalDate,
         endDate: LocalDate,
     ): List<DayTasks> {
-        val tasks =  taskDao.getTasksForDateRange(
+        val tasks = taskDao.getTasksForDateRange(
             startDate,
             endDate,
             limit = 50,

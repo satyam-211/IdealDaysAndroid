@@ -6,7 +6,7 @@ object StringConstants {
 
 object RouteConstants{
    const val ROOT = "/"
-   const val ADDTASKROUTE = "addTaskScreen"
+   const val ADDEDITTASKROUTE = "addTaskScreen"
 }
 
 
