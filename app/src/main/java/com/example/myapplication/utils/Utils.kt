@@ -53,7 +53,7 @@ object Utils {
             }
 
             val mimeType = context.contentResolver.getType(persistableUri) ?: ""
-            AttachmentInfo(uri = persistableUri, type = mimeType)
+            AttachmentInfo(uri = persistableUri.toString(), type = mimeType)
         }
     } catch (e: Exception) {
         Log.e("Permissions", "Error handling URI permission: ${e.message}")

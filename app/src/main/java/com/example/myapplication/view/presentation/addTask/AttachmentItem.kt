@@ -59,7 +59,7 @@ fun AttachmentItem(
     val scope = rememberCoroutineScope()
 
     var hasPermission by remember(attachment.uri) {
-        mutableStateOf(checkUriPermission(context, attachment.uri.toString()))
+        mutableStateOf(checkUriPermission(context, attachment.uri))
     }
 
     // Add launcher for regaining permission
@@ -67,7 +67,7 @@ fun AttachmentItem(
         contract = object : ActivityResultContracts.OpenDocument() {
             override fun createIntent(context: Context, input: Array<String>): Intent {
                 val intent = super.createIntent(context, input)
-                val fileName = getFileName(context, Uri.parse(attachment.uri.toString()))
+                val fileName = getFileName(context, Uri.parse(attachment.uri))
 
                 // Target the specific file if we have the name
                 if (fileName != null) {
@@ -82,7 +82,7 @@ fun AttachmentItem(
     ) { uri ->
         uri?.let {
             Utils.getPersistentAttachmentInfo(uri, context)?.let {
-                hasPermission = checkUriPermission(context, it.uri.toString())
+                hasPermission = checkUriPermission(context, it.uri)
                 if (hasPermission) onUpdate(it)
             }
         }
@@ -95,14 +95,14 @@ fun AttachmentItem(
             .clickable {
                 if (!hasPermission) {
                     // Launch document picker to regain permission
-                    val mimeType = getMimeType(context, Uri.parse(attachment.uri.toString()))
+                    val mimeType = getMimeType(context, Uri.parse(attachment.uri))
                     documentLauncher.launch(arrayOf(mimeType))
                     return@clickable
                 }
 
                 scope.launch {
                     try {
-                        if (!openAttachment(context, attachment.uri.toString())) {
+                        if (!openAttachment(context, attachment.uri)) {
                             Toast
                                 .makeText(
                                     context,
@@ -130,7 +130,7 @@ fun AttachmentItem(
         Box(modifier = Modifier.alpha(if (hasPermission) 1f else 0.5f)) {
             if (attachment.type.startsWith("image", ignoreCase = true)) {
                 ImagePreview(
-                    uri = Uri.parse(attachment.uri.toString()),
+                    uri = Uri.parse(attachment.uri),
                     onError = {
                         DefaultIcon(getDefaultIconForType(attachment.type))
                     }
@@ -147,7 +147,7 @@ fun AttachmentItem(
         ) {
             Text(
                 text = remember(attachment.uri) {
-                    getFileName(context, Uri.parse(attachment.uri.toString())) ?: "Unknown File"
+                    getFileName(context, Uri.parse(attachment.uri)) ?: "Unknown File"
                 }
             )
             if (!hasPermission) {
