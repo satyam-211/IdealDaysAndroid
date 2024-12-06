@@ -1,6 +1,5 @@
 package com.example.myapplication.model
 
-import com.example.myapplication.data.AttachmentInfo
 import com.example.myapplication.data.local.entities.TaskEntity
 import com.example.myapplication.utils.now
 import com.google.gson.Gson

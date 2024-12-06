@@ -3,8 +3,8 @@ package com.example.myapplication.data.local.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import com.example.myapplication.data.AttachmentInfo
 import com.example.myapplication.data.local.type_converters.Converters
+import com.example.myapplication.model.AttachmentInfo
 import com.example.myapplication.model.CompletionEntry
 import com.example.myapplication.model.Task
 import com.google.gson.Gson

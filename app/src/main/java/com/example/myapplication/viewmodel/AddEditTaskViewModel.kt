@@ -4,7 +4,7 @@ package com.example.myapplication.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.AttachmentInfo
+import com.example.myapplication.model.AttachmentInfo
 import com.example.myapplication.data.repo.TaskRepository
 import com.example.myapplication.model.Task
 import com.example.myapplication.model.toTask

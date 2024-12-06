@@ -1,8 +1,10 @@
 package com.example.myapplication.data.local.type_converters
 
+import android.net.Uri
 import androidx.room.TypeConverter
-import com.example.myapplication.data.AttachmentInfo
-import com.google.gson.Gson
+import com.example.myapplication.model.AttachmentInfo
+import com.example.myapplication.model.UriAdapter
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.datetime.LocalDate
 import java.util.UUID
@@ -30,7 +32,10 @@ class Converters {
 
     @TypeConverter
     fun fromAttachmentInfoList(attachments: List<AttachmentInfo>?): String? {
-        return Gson().toJson(attachments)
+        val gson = GsonBuilder()
+            .registerTypeAdapter(Uri::class.java, UriAdapter())
+            .create()
+        return gson.toJson(attachments)
     }
 
     @TypeConverter
@@ -39,7 +44,10 @@ class Converters {
             emptyList()
         } else {
             val type = object : TypeToken<List<AttachmentInfo>>() {}.type
-            Gson().fromJson(json, type)
+            val gson = GsonBuilder()
+                .registerTypeAdapter(Uri::class.java, UriAdapter())
+                .create()
+            gson.fromJson(json, type)
         }
     }
 }

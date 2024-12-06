@@ -6,10 +6,7 @@ import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.provider.DocumentsContract
-import android.provider.MediaStore
 import android.provider.Settings
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Row
@@ -33,7 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.data.AttachmentInfo
+import com.example.myapplication.model.AttachmentInfo
+import com.example.myapplication.utils.Utils
 import kotlinx.coroutines.launch
 
 @Composable
@@ -68,37 +66,7 @@ fun AddAttachmentButton(
     ) { uris: List<Uri>? ->
         uris?.let { selectedUris ->
             val attachments = selectedUris.mapNotNull { uri ->
-                try {
-                    // For media documents, we need to get a persistent URI
-                    val finalUri =
-                        getMediaContentUri(uri)
-
-
-                    finalUri.let { persistableUri ->
-                        // Take permission if we don't have it
-                        val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-
-                        try {
-                            context.contentResolver.takePersistableUriPermission(
-                                persistableUri,
-                                takeFlags
-                            )
-                        } catch (e: SecurityException) {
-                            Log.w(
-                                "Permissions",
-                                "Could not take persistable permission: ${e.message}"
-                            )
-                            // Continue anyway as we might still be able to access the file
-                        }
-
-                        val mimeType = context.contentResolver.getType(persistableUri) ?: ""
-                        AttachmentInfo(uri = persistableUri.toString(), type = mimeType)
-                    }
-                } catch (e: Exception) {
-                    Log.e("Permissions", "Error handling URI permission: ${e.message}")
-                    null
-                }
+                Utils.getPersistentAttachmentInfo(uri, context)
             }
 
             if (attachments.isNotEmpty()) {
@@ -176,33 +144,4 @@ fun AddAttachmentButton(
     }
 }
 
-fun getMediaContentUri(uri: Uri): Uri {
-    try {
-        if (uri.scheme == "content" && uri.authority != "com.android.providers.media.documents") {
-            return uri
-        }
 
-        val docId = DocumentsContract.getDocumentId(uri)
-        val split = docId.split(":").toTypedArray()
-        val type = split[0]
-
-        return when (type.lowercase()) {
-            "image" -> {
-                val id = split.getOrNull(1) ?: ""
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath(id).build()
-            }
-            "video" -> {
-                val id = split.getOrNull(1) ?: ""
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath(id).build()
-            }
-            "audio" -> {
-                val id = split.getOrNull(1) ?: ""
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath(id).build()
-            }
-            else -> uri  // Return original URI for documents
-        }
-    } catch (e: Exception) {
-        Log.e("URI", "Error converting URI: ${e.message}")
-        return uri
-    }
-}

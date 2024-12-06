@@ -45,7 +45,8 @@ import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.FileVideo
 import com.composables.icons.lucide.Image
 import com.composables.icons.lucide.Lucide
-import com.example.myapplication.data.AttachmentInfo
+import com.example.myapplication.model.AttachmentInfo
+import com.example.myapplication.utils.Utils
 import kotlinx.coroutines.launch
 
 @Composable
@@ -58,7 +59,7 @@ fun AttachmentItem(
     val scope = rememberCoroutineScope()
 
     var hasPermission by remember(attachment.uri) {
-        mutableStateOf(checkUriPermission(context, attachment.uri))
+        mutableStateOf(checkUriPermission(context, attachment.uri.toString()))
     }
 
     // Add launcher for regaining permission
@@ -66,7 +67,7 @@ fun AttachmentItem(
         contract = object : ActivityResultContracts.OpenDocument() {
             override fun createIntent(context: Context, input: Array<String>): Intent {
                 val intent = super.createIntent(context, input)
-                val fileName = getFileName(context, Uri.parse(attachment.uri))
+                val fileName = getFileName(context, Uri.parse(attachment.uri.toString()))
 
                 // Target the specific file if we have the name
                 if (fileName != null) {
@@ -80,19 +81,9 @@ fun AttachmentItem(
         }
     ) { uri ->
         uri?.let {
-            try {
-                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                context.contentResolver.takePersistableUriPermission(uri, takeFlags)
-                // Refresh permission state
-                hasPermission = checkUriPermission(context, uri.toString())
-                if (hasPermission) {
-                    val mimeType = context.contentResolver.getType(uri) ?: ""
-                    val updatedAttachment = AttachmentInfo(uri = uri.toString(), type = mimeType)
-                    onUpdate(updatedAttachment)
-                }
-            } catch (e: Exception) {
-                Log.e("Permissions", "Failed to take permission: ${e.message}")
+            Utils.getPersistentAttachmentInfo(uri, context)?.let {
+                hasPermission = checkUriPermission(context, it.uri.toString())
+                if (hasPermission) onUpdate(it)
             }
         }
     }
@@ -104,14 +95,14 @@ fun AttachmentItem(
             .clickable {
                 if (!hasPermission) {
                     // Launch document picker to regain permission
-                    val mimeType = getMimeType(context, Uri.parse(attachment.uri))
+                    val mimeType = getMimeType(context, Uri.parse(attachment.uri.toString()))
                     documentLauncher.launch(arrayOf(mimeType))
                     return@clickable
                 }
 
                 scope.launch {
                     try {
-                        if (!openAttachment(context, attachment.uri)) {
+                        if (!openAttachment(context, attachment.uri.toString())) {
                             Toast
                                 .makeText(
                                     context,
@@ -139,7 +130,7 @@ fun AttachmentItem(
         Box(modifier = Modifier.alpha(if (hasPermission) 1f else 0.5f)) {
             if (attachment.type.startsWith("image", ignoreCase = true)) {
                 ImagePreview(
-                    uri = Uri.parse(attachment.uri),
+                    uri = Uri.parse(attachment.uri.toString()),
                     onError = {
                         DefaultIcon(getDefaultIconForType(attachment.type))
                     }
@@ -156,7 +147,7 @@ fun AttachmentItem(
         ) {
             Text(
                 text = remember(attachment.uri) {
-                    getFileName(context, Uri.parse(attachment.uri)) ?: "Unknown File"
+                    getFileName(context, Uri.parse(attachment.uri.toString())) ?: "Unknown File"
                 }
             )
             if (!hasPermission) {
