@@ -37,7 +37,7 @@ import com.example.myapplication.model.Task
 import com.example.myapplication.viewmodel.TaskListViewModel
 
 @Composable
-fun PartialTaskView(task: Task.PartialTask) {
+fun PartialTaskView(task: Task.PartialTask, editEnabled: Boolean) {
     val viewModel: TaskListViewModel = hiltViewModel()
     var showHistorySheet by remember {
         mutableStateOf(false)
@@ -78,9 +78,10 @@ fun PartialTaskView(task: Task.PartialTask) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Button(onClick = { showEditSheet = true }) {
-                    Text("Set Completion")
-                }
+                if (editEnabled)
+                    Button(onClick = { showEditSheet = true }) {
+                        Text("Set Completion")
+                    }
                 Text(text = "Completed ${task.getLatestCompletionPercentage()}%")
             }
         }

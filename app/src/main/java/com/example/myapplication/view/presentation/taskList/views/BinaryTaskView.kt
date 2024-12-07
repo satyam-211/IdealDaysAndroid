@@ -1,6 +1,7 @@
 package com.example.myapplication.view.presentation.taskList.views
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,24 +23,30 @@ import com.example.myapplication.model.Task
 import com.example.myapplication.viewmodel.TaskListViewModel
 
 @Composable
-fun BinaryTaskView(task: Task.BinaryTask) {
+fun BinaryTaskView(task: Task.BinaryTask, editEnabled: Boolean) {
     var isChecked by remember { mutableStateOf(task.isThisCompleted) }
     val viewModel: TaskListViewModel = hiltViewModel()
     Row(
         modifier = Modifier
+            .clickable {
+                isChecked = !isChecked
+                task.isThisCompleted = isChecked
+                viewModel.updateTaskCompletion(task = task)
+            }
             .padding(12.dp)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
-            checked = isChecked,
-            onCheckedChange = { checked ->
-                isChecked = checked
-                task.isThisCompleted = checked
-                viewModel.updateTaskCompletion(task = task)
-            }
-        )
+        if (editEnabled)
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { checked ->
+                    isChecked = checked
+                    task.isThisCompleted = checked
+                    viewModel.updateTaskCompletion(task = task)
+                }
+            )
 
         Spacer(modifier = Modifier.width(8.dp))
 

@@ -57,8 +57,8 @@ fun TaskView(task: Task) {
             ) else CardDefaults.cardColors()
         ) {
             when (task) {
-                is Task.BinaryTask -> BinaryTaskView(task)
-                is Task.PartialTask -> PartialTaskView(task)
+                is Task.BinaryTask -> BinaryTaskView(task, editEnabled = !angerMode)
+                is Task.PartialTask -> PartialTaskView(task, editEnabled = !angerMode)
             }
         }
         Spacer(modifier = Modifier.width(4.dp))
@@ -80,6 +80,7 @@ fun TaskView(task: Task) {
     }
 
 }
+
 
 @Composable
 @Preview(showBackground = true)

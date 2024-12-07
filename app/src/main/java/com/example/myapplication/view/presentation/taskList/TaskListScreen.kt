@@ -15,8 +15,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,10 +37,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.composables.icons.lucide.Angry
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Smile
 import com.example.myapplication.constants.PaddingConstants
 import com.example.myapplication.constants.RouteConstants
 import com.example.myapplication.constants.StringConstants
 import com.example.myapplication.view.presentation.taskList.views.DayTaskView
+import com.example.myapplication.view.presentation.taskList.views.GradientProgressBar
 import com.example.myapplication.viewmodel.TaskListViewModel
 
 
@@ -54,6 +56,12 @@ fun TaskListScreen(
     navController: NavController,
 ) {
     val dayTaskList by viewModel.dayTaskList.collectAsState()
+    val percentageCompleted by remember {
+        derivedStateOf {
+            val avg = dayTaskList.map { it.completionPercentage }.average()
+            if (avg.isNaN()) 0.0 else avg/100
+        }
+    }
     val angerMode by viewModel.angerMode.collectAsState()
     val loading by viewModel.isLoading.collectAsState()
     val scrollState = rememberLazyListState()
@@ -106,7 +114,7 @@ fun TaskListScreen(
                 containerColor = if (!angerMode) Color.Red else MaterialTheme.colorScheme.primary,
             ) {
                 Icon(
-                    imageVector = if (angerMode) Icons.Default.ThumbUp else Icons.Default.Warning,
+                    imageVector = if (angerMode) Lucide.Smile else Lucide.Angry,
                     tint = if (angerMode) Color.Black else MaterialTheme.colorScheme.onPrimary,
                     contentDescription = if (angerMode) "Normal Mode" else "Anger Mode"
                 )
@@ -151,7 +159,10 @@ fun TaskListScreen(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
                                     .size(50.dp) // Set the size of the box
-                                    .background(Color.Red, shape = CircleShape) // Make it circular with a background color
+                                    .background(
+                                        Color.Red,
+                                        shape = CircleShape
+                                    ) // Make it circular with a background color
                             ) {
                                 Text(
                                     text = scheduleTasksCount.toString(),
@@ -161,6 +172,14 @@ fun TaskListScreen(
                                 Text("Schedule Now")
                             }
                         }
+                    }
+                if (!angerMode)
+                    item {
+                        GradientProgressBar(
+                            percentComplete = percentageCompleted,
+                            startDate = viewModel.currentStartDate,
+                            endDate = viewModel.currentEndDate
+                        )
                     }
                 items(dayTaskList) { dayTasks ->
                     DayTaskView(dayTasks = dayTasks)

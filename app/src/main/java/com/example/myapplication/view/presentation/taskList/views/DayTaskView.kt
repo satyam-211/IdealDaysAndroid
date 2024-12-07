@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,8 +40,8 @@ fun DayTaskView(dayTasks: DayTasks) {
 
 
     Column(
-        modifier = Modifier.fillMaxWidth()
-            .clickable { isExpanded =!isExpanded }
+        modifier = Modifier
+            .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
             .animateContentSize()
             .padding(PaddingConstants.PADDING.dp),
@@ -49,7 +50,9 @@ fun DayTaskView(dayTasks: DayTasks) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isExpanded = !isExpanded }
         ) {
             Column {
                 Text(
@@ -75,7 +78,9 @@ fun DayTaskView(dayTasks: DayTasks) {
             Spacer(modifier = Modifier.height(8.dp))
             Column {
                 dayTasks.tasks.forEach { task ->
-                    TaskView(task = task)
+                    key(task.id) {
+                        TaskView(task = task)
+                    }
                 }
             }
         }

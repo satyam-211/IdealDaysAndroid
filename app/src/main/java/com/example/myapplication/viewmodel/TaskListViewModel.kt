@@ -27,10 +27,12 @@ class TaskListViewModel @Inject constructor(private val taskRepository: TaskRepo
     private val _dayTaskList = MutableStateFlow<List<DayTasks>>(emptyList())
     val dayTaskList: StateFlow<List<DayTasks>> = _dayTaskList
 
-    private var currentStartDate: LocalDate =
+    var currentStartDate: LocalDate =
         LocalDate.now() // Keep track of the end date for pagination
-    private var currentEndDate: LocalDate =
+        private set
+    var currentEndDate: LocalDate =
         LocalDate.now()
+        private set
     private var isMoreDataAvailable: Boolean = true
 
 
@@ -150,6 +152,34 @@ class TaskListViewModel @Inject constructor(private val taskRepository: TaskRepo
                 }
             }
         }
+        updateLocalTaskState(task)
+    }
+
+    private fun updateLocalTaskState(updatedTask: Task) {
+        _allTaskList.value = _allTaskList.value.map { dayTasks ->
+            if (dayTasks.tasks.any { it.id == updatedTask.id }) {
+                val updatedTasks = dayTasks.tasks.map { task ->
+                    if (task.id == updatedTask.id) updatedTask else task
+                }
+                dayTasks.copy(
+                    tasks = updatedTasks,
+                    completionPercentage = calculateCompletionPercentage(updatedTasks)
+                )
+            } else dayTasks
+        }
+        _dayTaskList.value = _allTaskList.value
+    }
+
+    private fun calculateCompletionPercentage(tasks: List<Task>): Double {
+        if (tasks.isEmpty()) return 0.0
+        val totalCompletion = tasks.sumOf { task ->
+            when (task) {
+                is Task.BinaryTask -> if (task.isCompleted()) 100 else 0
+                is Task.PartialTask -> task.getLatestCompletionPercentage()
+            }
+        }
+
+        return (totalCompletion / tasks.size).toDouble()
     }
 
     fun scheduleTasksNow() {

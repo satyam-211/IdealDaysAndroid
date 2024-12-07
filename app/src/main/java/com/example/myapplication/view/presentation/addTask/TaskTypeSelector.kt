@@ -1,5 +1,6 @@
 package com.example.myapplication.view.presentation.addTask
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +21,9 @@ fun TaskTypeSelector(
 ) {
     Column {
         // Binary Task Option
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
+            onTaskTypeSelected(TaskType.Binary)
+        }) {
             RadioButton(
                 selected = selectedTaskType == TaskType.Binary,
                 onClick = { onTaskTypeSelected(TaskType.Binary) }
@@ -37,7 +40,9 @@ fun TaskTypeSelector(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Partial Task Option
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
+            onTaskTypeSelected(TaskType.Partial)
+        }) {
             RadioButton(
                 selected = selectedTaskType == TaskType.Partial,
                 onClick = { onTaskTypeSelected(TaskType.Partial) }

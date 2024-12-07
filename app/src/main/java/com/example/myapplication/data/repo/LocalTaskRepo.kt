@@ -56,17 +56,6 @@ class LocalTaskRepository @Inject constructor(private val taskDao: TaskDao) : Ta
         return totalCompletionPercentage.toDouble() / totalTasks
     }
 
-    private fun calculatePartialTaskCompletionPercentage(
-        task: TaskEntity,
-        date: LocalDate
-    ): Int {
-        val completionEntries = task.completionHistoryJson?.let { parseCompletionHistory(it) }
-        // Find the entry for the specified date
-        val entryForDate = completionEntries?.find { it.date == date }
-
-        return entryForDate?.percentageCompleted ?: 0
-    }
-
     private fun parseCompletionHistory(json: String): List<CompletionEntry> {
         val gson = Gson()
         val type = object : TypeToken<List<CompletionEntry>>() {}.type
