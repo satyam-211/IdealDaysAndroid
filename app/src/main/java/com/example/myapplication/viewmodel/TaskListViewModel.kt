@@ -192,5 +192,24 @@ class TaskListViewModel @Inject constructor(private val taskRepository: TaskRepo
         loadCurrentTasks()
     }
 
+    fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            taskRepository.deleteTask(task)
+        }
+        updateLocalStateAfterDelete(task)
+    }
+
+    private fun updateLocalStateAfterDelete(deletedTask: Task) {
+        _allTaskList.value = _allTaskList.value.mapNotNull { dayTasks ->
+            val updatedTasks = dayTasks.tasks.filter { it.id != deletedTask.id }
+            if (updatedTasks.isNotEmpty()) {
+                dayTasks.copy(
+                    tasks = updatedTasks,
+                    completionPercentage = calculateCompletionPercentage(updatedTasks)
+                )
+            } else null
+        }
+        _dayTaskList.value = _allTaskList.value
+    }
 
 }
